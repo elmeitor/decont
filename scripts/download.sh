@@ -16,3 +16,12 @@
 #   CCAGGATTTACAGACTTTAAA
 #
 #   If $4 == "another" only the **first two sequence** should be output
+
+# usar el comando wget para descargar varios archivos a la vez
+# se crea un documento de texto y ubicamos las URL de descarga allí
+# para ello se usa -i para obtener todos los archivos almacenados en  un archivo de texto
+# de esta manera me ha descargado todos los ficheros en la carpeta de descarga... 
+# ahora con -P le decimos donde queremos dejar los ficheros descargados 
+# wget -i urls.txt
+wget -P ~/decont/data -i urls.txt
+
