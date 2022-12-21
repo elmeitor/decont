@@ -16,10 +16,7 @@ echo " end download files"
 echo "Download the contaminants fasta file."
 bash scripts/download.sh https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz res yes "small nuclear RNA"
 echo " end Download contaminants."
-echo "guardar el fichero fasta original que esta no filtrado" 
-mv res/contaminants.fasta res/contaminants.fasta.unfiltered
-echo "mover el fichero filtrado y continuamos trabajando con este último"
-mv res/contaminants.fasta.filtered res/contaminants.fasta
+
 # Index the contaminants file
 ### probado ok bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 ### prueba volvemos a indexar ahora ya el contaminants filtered
@@ -27,6 +24,7 @@ echo "Running index the contaminants file."
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 echo "end STAR index..."
 exit 1
+
 # Merge the samples into a single file
 #for sid in $(<list_of_sample_ids>) #TODO
 #for sid in $(cat basename   ### hacerlo con basename

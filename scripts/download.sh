@@ -67,9 +67,17 @@ fichero=$(basename $url .gz)
 if [ ! -z "$4" ] # si no es vacio el $4  
 then
 echo "dentro de la opción 4 de filtrado"
+echo "guardar el fichero fasta original que esta no filtrado"
+cp $outdir/$fichero $outdir/$fichero.unfiltered
 ##Recomendación usar el paquete seqkit de Conda para este filtrado
 echo "seqkit grep -vrnp '$4' $outdir/$fichero > $outdir/$fichero.filtered"
 seqkit grep -vrnp "$4" $outdir/$fichero > $outdir/$fichero.filtered
+
+echo "copiar el fichero filtrado y continuamos trabajando con este último"
+cp $outdir/$fichero.filtered $outdir/$fichero 
+
+##cp res/contaminants.fasta.filtered res/contaminants.fasta
+echo "final filtrado $outdir/$fichero"
 fi
 echo
 
