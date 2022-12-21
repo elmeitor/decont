@@ -25,27 +25,51 @@
 # wget -i urls.txt -> opción sin bucle mejora
 ###### con esta opcion he descargado las muestras
 ######wget -P ~/decont/data -i urls.txt
-######wget -i $url -p $outdir  #para poder llamarlo genericamente desde pipeline
-#  $1  primer argumento fichero a descargar
-#  $2  segundo argumento directorio lugar donde se va a realizar la descarga
-#  $3  opcion decomprimir  if $3 == 'yes' -> gunzip -k $1...
-#  
-#### download.sh urls.txt ~/decont/data yes
-echo "dentro de download.sh para $url= " $1 " $outdir= " $2 " $comp= " $3 
- if [-e $2 ] # Check output already exists 
+######wget -i $urls -p $outdir sustituiría al bucle en el pipeline
+ 
+#  $1  primer argumento fichero a descargarr#  $2  segundo argumento directorio lugar donde se va a realizar la descarga
+#  $3  opcion decomprimir  if $3 == 'yes' -> gunzip -k data/*fastq.gz
+#  $4  filtrado de muestras 
+#### bash download.sh urls.txt ~/decont/data yes "Small_nuclear"
+echo "dentro de download.sh para $url= " $1 " $outdir= " $2 " $desc= " $3  "$filter_samples " $4
+url=$1
+outdir=$2
+desc=$3
+##filter_samples=$4
+ 
+ if [ -e $outdir/$(basename $url) ] # Check output already exists obligatorio blancos entre corchetes 
     then
-        echo "$2 already exists"
+        echo "$outdir/$(basename $url) already exists"
         exit        
  fi
- echo "como no existe salida run download"
- wget -i $1 -p $2 $3
- if [$3 eq 'yes']
+ echo "como no existe fichero en salida run download" $outdir
+ echo "descarga del fichero..." $url
+ #########   solucion trasladada al pipeline wget -P ~/decont/data -i urls.txt
+ ##wget -P ~/decont/data -i $url
+ ##wget -nc -P $url $outdir
+ wget -q -P $outdir $url  
+
+ if [ "$desc" == "yes" ]
  then
-   gunzip -k $2/$(basename $1) ##$out_dir/$(basename $file_url)
- 
+   echo "Uncompressing samples..."
+   gunzip -k $outdir/$(basename $url)
+   ##mkdir -p data/uncomp
+   ##mv data/*.fastq data/uncomp  
  else
-   echo "no se solicita la descompresión de los ficheros"
+   echo "no se solicita la descompresión de los ficheros" $desc
  fi
  echo "fin download.sh"
 
 echo
+# apartado $4 
+fichero=$(basename $url .gz) 
+#Filter small nuclear sequences
+if [ ! -z "$4" ] # si no es vacio el $4  
+then
+echo "dentro de la opción 4 de filtrado"
+##Recomendación usar el paquete seqkit de Conda para este filtrado
+echo "seqkit grep -vrnp '$4' $outdir/$fichero > $outdir/$fichero.filtered"
+seqkit grep -vrnp "$4" $outdir/$fichero > $outdir/$fichero.filtered
+fi
+echo
+

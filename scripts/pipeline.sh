@@ -1,29 +1,32 @@
-
-echo "-------- Starting pipeline at $(date +'%d %h %y, %r')... --------"
+xecho "-------- Starting pipeline at $(date +'%d %h %y, %r')... --------"
 
 #Download all the files specified in data/filenames
 #for url in $(<list_of_urls>) #TODO
 echo "Download list of urls files."
+##wget -P ~/decont/data -i urls.txt
 for url in $(cat data/urls)
 do
-    bash scripts/download.sh $url data
+    bash scripts/download.sh $url data yes
 done
 echo " end download files"
-
+# exit 1 Pruebas decargas muestras
 # Download the contaminants fasta file, uncompress it, and
 # filter to remove all small nuclear RNAs
 #bash scripts/download.sh <contaminants_url> res yes #TODO
-# ejecutado por separado ok desde aqui se me ha generado unas cosas muy raras ?????????? preguntar a Tomas como quitar
 echo "Download the contaminants fasta file."
-bash scripts/download.sh https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz res yes
+bash scripts/download.sh https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz res yes "small nuclear RNA"
 echo " end Download contaminants."
-echo
+echo "guardar el fichero fasta original que esta no filtrado" 
+mv res/contaminants.fasta res/contaminants.fasta.unfiltered
+echo "mover el fichero filtrado y continuamos trabajando con este último"
+mv res/contaminants.fasta.filtered res/contaminants.fasta
 # Index the contaminants file
 ### probado ok bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
+### prueba volvemos a indexar ahora ya el contaminants filtered
 echo "Running index the contaminants file."
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 echo "end STAR index..."
-
+exit 1
 # Merge the samples into a single file
 #for sid in $(<list_of_sample_ids>) #TODO
 #for sid in $(cat basename   ### hacerlo con basename
@@ -47,7 +50,7 @@ echo "run cutadapt for all merged files..."
 for fname in out/merged/*.fastq.gz
     # basename deja solo el nombre corto y le quita la extensión final si se indica
     sid=$(basename $fname .fastq.gz)
-    if [ -e out/trimmed/${sid}.trimmed.fastq.gz ] # Check output already exists copiado ¿?
+    if [ -e out/trimmed/${sid}.trimmed.fastq.gz ] # Check output already exists   
     then
         echo "$sid already trimmed"
         continue        
@@ -62,10 +65,10 @@ for fname in out/merged/*.fastq.gz
 done
 echo "Done"
 
-# TODO: run STAR for all trimmed files pa pruebas
-####echo "run STAR para alinemiento"
-####for fname in out/trimmed/*.fastq.gz
-####do
+    # TODO: run STAR for all trimmed files pa pruebas
+    ####echo "run STAR para alinemiento"
+    ####for fname in out/trimmed/*.fastq.gz
+    ####do
     # you will need to obtain the sample ID from the filename
     ##sid=#TODO
     ####sid = $(basename $fname .trimmed.fastq.gz)
@@ -75,21 +78,18 @@ echo "Done"
     ####    continue        
     ####fi
     ####echo "run STAR para mapear con el contaminante indexado..."
-  # preguntar a Tomas lo de los parentesis no lo entiendo del todo bien si ponerlo o no ???? DUDAS
-  ####echo "Decontaminating sample $sid..."
-    #### mkdir -p out/star/${sid}
+    ####echo "Decontaminating sample $sid..."
+    #### mkdir -p out/star/$sid
     ####STAR --runThreadN 4 \ 
     #### --genomeDir res/contaminants_idx \
     #### --outReadsUnmapped Fastx 
     #### --readFilesIn out/trimmed/${sid}.trimmed.fastq.gz \ # <input_file> \
     #### --readFilesCommand zcat    \  #  --readFilesCommand gunzip -c
     #### --outFileNamePrefix out/star/${sid}/      # <output_directory> habría que anteponer prefijo para ficheros de salida? blah_
-    ##   pregunta no se podría usar llamada al index genérico con opción de indexado o mapeado 
-    ##   bash scripts/index.sh $sid res/index # <input_file> <output_directory>
     ####done
     ####echo "end of STAR of trimed files MAPEO"
 echo 
-echo "Running STAR alignment..."
+ echo "Running STAR alignment..."
 echo
 for fname in out/trimmed/*.fastq.gz
 do
