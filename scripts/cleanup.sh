@@ -17,9 +17,11 @@
 ##
 ## prueba 3: opc4 sin echo + opc5 sin echo y vuelta a ejecutar el pipeline.sh ok En esta prueba al borrar output, se borran out.merged out.star out.trimmed.
 ##
-## prueba 4 opc3 sin echo + opc4 + opc5  y vuelta a ejecutar el pipeline.sh
+## prueba 4: opc3 sin echo + opc4 + opc5  y vuelta a ejecutar el pipeline.sh
 ## 
-## prueba 5 opc2 sin echo + opc3 + opc4 + opc5 , equivalente a sin parametros ya que borraría todo y vuelta a ejecutar el pipeline.sh desde el inicio -- PRUEBASTOT 
+## prueba 5: opc2 sin echo + opc3 + opc4 + opc5 , equivalente a sin parametros ya que borraría todo y vuelta a ejecutar el pipeline.sh desde el inicio 
+##
+## prueba 6: opc1 sin echo -> borrado de todos los ficheros creados -> ejecución de todo pipeline.sh PRUEBATOTAL!
 ##
 ##$1 = "data"
 ##$2 = "resources"
@@ -28,21 +30,21 @@
 if [ "$#" == 0 ] # should remove everything
 then
   echo "no hay argumento debe borrar todo $#"
-  echo rm -rf data/*.fastq  ## borraría los ficheros de muestra descargados y sus descomprimidos 
-  echo rm -rf res/contaminants* ## borraría resultado descarga y del index del contaminante
-  echo rm -rf log/*  ## borraría log/cutadapt log/pipelineLog
-  echo rm -rf out/*  ## borraría out/merged out/star out/trimmed
+  rm -rf data/*.fastq data/*.fastq.gz ## borraría los ficheros de muestra descargados y sus descomprimidos 
+  rm -rf res/contaminants*            ## borraría resultado descarga y del index del contaminante
+  rm -rf log/*                        ## borraría log/cutadapt log/pipelineLog
+  rm -rf out/*                        ## borraría out/merged out/star out/trimmed
 else
  if [ $1 == "data" ]
  then
     echo "borramos el fichero data que contiene las descargas de las muestras de RNA"
-    echo rm -rf data/*.fastq
+    rm -rf data/*.fastq data/*.fastq.gz
     echo " fin del borrado directorio data"
  fi;
  if [ $2 == "resources" ]
  then 
     echo "borramos el fichero resources que contiene las descargas de las muestras de RNA"
-    echo rm -rf res/contaminants*
+    rm -rf res/contaminants*
     echo " fin del borrado directorio res" 
  fi;
  if [ $3 == "output" ]
