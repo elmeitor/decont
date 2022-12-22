@@ -3,12 +3,15 @@ echo "-------- Starting pipeline at $(date +'%d %h %y, %r')... --------"
 
 #Download all the files specified in data/filenames
 #for url in $(<list_of_urls>) #TODO
+## 
+##for url in $(cat data/urls)
+##do
+##    bash scripts/download.sh $url data yes
+##done
+## 
+## Incorporación de bonus - Descarga de ficheros con unas sola linea -> lo incluimos en un scripts independiente - borrado completo y ejecución de nuevo
 echo "Download list of urls files."
-##wget -P ~/decont/data -i urls.txt
-for url in $(cat data/urls)
-do
-    bash scripts/download.sh $url data yes
-done
+bash scripts/pipelinePlus.sh
 echo " end download files"
 # exit 1 Pruebas decargas muestras
 # Download the contaminants fasta file, uncompress it, and
