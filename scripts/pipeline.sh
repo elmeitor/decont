@@ -1,4 +1,5 @@
-xecho "-------- Starting pipeline at $(date +'%d %h %y, %r')... --------"
+
+echo "-------- Starting pipeline at $(date +'%d %h %y, %r')... --------"
 
 #Download all the files specified in data/filenames
 #for url in $(<list_of_urls>) #TODO
@@ -23,12 +24,17 @@ echo " end Download contaminants."
 echo "Running index the contaminants file."
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 echo "end STAR index..."
-exit 1
+# exit 1 pruebas hasta contaminante filtrado e indexado ok
 
 # Merge the samples into a single file
 #for sid in $(<list_of_sample_ids>) #TODO
 #for sid in $(cat basename   ### hacerlo con basename
 #for sid in $(ls data/*.fastq.gz | cut -d"-" -f1 | sort )
+if [ -d out/merged ] # Revisamos si el directorios del merge ya existe
+then
+   echo "out/merged ya existe ya realizado el merged"
+else            
+
 echo "Merge the samples into a single file."
 for sid in $(ls data/*fastq.gz | xargs basename -a | cut -d"-" -f1 | sort -u) 
 do
@@ -37,32 +43,41 @@ do
     echo "end merge $sid"
 done
 echo "end merge"
+fi
+echo "prueba de ejecución hasta merged comprobando si ya se ha ejecutado antes ok"
+##exit 1 pruebas merged
 ###
 # TODO: run cutadapt for all merged files
 # cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
 #     -o <trimmed_file> <input_file> > <log_file>
 ######
-mkdir -p out/trimmed
-mkdir -p log/cutadapt
-echo "run cutadapt for all merged files..."
-for fname in out/merged/*.fastq.gz
-    # basename deja solo el nombre corto y le quita la extensión final si se indica
-    sid=$(basename $fname .fastq.gz)
-    if [ -e out/trimmed/${sid}.trimmed.fastq.gz ] # Check output already exists   
-    then
-        echo "$sid already trimmed"
+if [ -d out/trimmed ] # Revisamos si el directorio del trimmed ya existe
+then
+   echo "out/trimmed ya existe ya realizado el cutadapt"
+else         
+	mkdir -p out/trimmed
+	mkdir -p log/cutadapt
+	echo "run cutadapt for all merged files..."
+	for fname in out/merged/*.fastq.gz
+	do
+    	# basename deja solo el nombre corto y le quita la extensión final si se indica
+    	sid=$(basename $fname .fastq.gz)
+    	if [ -e out/trimmed/${sid}.trimmed.fastq.gz ] # Check output already exists   
+    	then
+        	echo "$sid already trimmed"
         continue        
-    fi
-    echo "Trimming sample $sid..."
-    cutadapt \
-        -m 18 \
-        -a TGGAATTCTCGGGTGCCAAGG \
-        --discard-untrimmed \
-        -o out/trimmed/${sid}.trimmed.fastq.gz out/merged/${sid}.fastq.gz \
-        > log/cutadapt/${sid}.log
-done
-echo "Done"
-
+    	fi
+    	echo "Trimming sample $sid..."
+    	cutadapt \
+        	-m 18 \
+        	-a TGGAATTCTCGGGTGCCAAGG \
+        	--discard-untrimmed \
+        	-o out/trimmed/${sid}.trimmed.fastq.gz out/merged/${sid}.fastq.gz \
+        	> log/cutadapt/${sid}.log
+	done
+	echo "Done cutadapt"
+fi
+##exit 1 prueba hasta el cutadapt comprobando salidas ya existentes
     # TODO: run STAR for all trimmed files pa pruebas
     ####echo "run STAR para alinemiento"
     ####for fname in out/trimmed/*.fastq.gz
@@ -117,22 +132,23 @@ echo
 # - star: Percentages of uniquely mapped reads, reads mapped to multiple loci, and to too many loci
 # tip: use grep to filter the lines you're interested in
 echo "create a log file containing information from cutadapt and star logs"
-if [ -e Log.out ] # Check output already exists
+if [ -e pipeline\Log.out ] # Check output already exists
 then
     echo "Log file already exists"
     exit 0
 fi
 for fname in log/cutadapt/*.log
 do
+    mkdir -p log/pipelineLog
     sid=$(basename $fname .log)
-    echo "${sid}" >> Log.out
+    echo "${sid}" >> log/pipelineLog/Log.out
     ## log de cutadapt para cada muestra tratada
-    cat log/cutadapt/${sid}.log | egrep "Reads with |Total basepairs" >> Log.out
+    cat log/cutadapt/${sid}.log | egrep "Reads with |Total basepairs" >> log/pipelineLog/Log.out
     ## log de star para cada muestra mapeada
-    cat out/star/${sid}/Log.final.out | egrep "reads %|% of reads mapped to (multiple|too)" >> Log.out
-    echo >> Log.out
+    cat out/star/${sid}/Log.final.out | egrep "reads %|% of reads mapped to (multiple|too)" >> log/pipelineLog/Log.out
+    echo >> log/pipelineLog/Log.out
 done
 echo "end of log file for cutadapt and star..."
 
-echo "-------- Pipeline finished at $(date +'%d %h %y, %r')... --------
+echo "-------- Pipeline finished at $(date +'%d %h %y, %r')..."
 
