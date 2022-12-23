@@ -10,10 +10,12 @@ echo "-------- Starting pipeline at $(date +'%d %h %y, %r')... --------"
 ##done
 ## 
 ## Incorporación de bonus - Descarga de ficheros con unas sola linea -> lo incluimos en un scripts independiente - borrado completo y ejecución de nuevo
+#MEJORA-BONUS Download all the files in one liner
+#
 echo "Download list of urls files."
-bash scripts/pipelinePlus.sh
+wget -P data -i data/urls
 echo " end download files"
-# exit 1 Pruebas decargas muestras
+##exit 1 Pruebas decargas muestras mejora de una sola linea ok
 # Download the contaminants fasta file, uncompress it, and
 # filter to remove all small nuclear RNAs
 #bash scripts/download.sh <contaminants_url> res yes #TODO
@@ -27,7 +29,7 @@ echo " end Download contaminants."
 echo "Running index the contaminants file."
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 echo "end STAR index..."
-# exit 1 pruebas hasta contaminante filtrado e indexado ok
+## exit 1 #pruebas hasta contaminante filtrado e indexado ok
 
 # Merge the samples into a single file
 #for sid in $(<list_of_sample_ids>) #TODO
@@ -48,7 +50,7 @@ done
 echo "end merge"
 fi
 echo "prueba de ejecución hasta merged comprobando si ya se ha ejecutado antes ok"
-##exit 1 pruebas merged
+##exit 1 pruebas merged ok
 ###
 # TODO: run cutadapt for all merged files
 # cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
@@ -80,32 +82,11 @@ else
 	done
 	echo "Done cutadapt"
 fi
-##exit 1 prueba hasta el cutadapt comprobando salidas ya existentes
-    # TODO: run STAR for all trimmed files pa pruebas
-    ####echo "run STAR para alinemiento"
-    ####for fname in out/trimmed/*.fastq.gz
-    ####do
-    # you will need to obtain the sample ID from the filename
-    ##sid=#TODO
-    ####sid = $(basename $fname .trimmed.fastq.gz)
-    ####if [ -e out/star/$sid/ ] # Check output already exists 
-    ####then
-    ####    echo "$sid already aligned"
-    ####    continue        
-    ####fi
-    ####echo "run STAR para mapear con el contaminante indexado..."
-    ####echo "Decontaminating sample $sid..."
-    #### mkdir -p out/star/$sid
-    ####STAR --runThreadN 4 \ 
-    #### --genomeDir res/contaminants_idx \
-    #### --outReadsUnmapped Fastx 
-    #### --readFilesIn out/trimmed/${sid}.trimmed.fastq.gz \ # <input_file> \
-    #### --readFilesCommand zcat    \  #  --readFilesCommand gunzip -c
-    #### --outFileNamePrefix out/star/${sid}/      # <output_directory> habría que anteponer prefijo para ficheros de salida? blah_
-    ####done
-    ####echo "end of STAR of trimed files MAPEO"
+##exit 1 prueba hasta el cutadapt comprobando salidas ya existentes ok
+# TODO: run STAR alignment
+#### --readFilesCommand zcat    \  #  --readFilesCommand gunzip -c
 echo 
- echo "Running STAR alignment..."
+echo "Running STAR alignment..."
 echo
 for fname in out/trimmed/*.fastq.gz
 do
@@ -127,8 +108,6 @@ do
 done 
 echo "end of STAR of trimed files MAPEO"
 echo
-
-#### por aqui esta parte me ha dado error....
 # TODO: create a log file containing information from cutadapt and star logs
 # (this should be a single log file, and information should be *appended* to it on each run)
 # - cutadapt: Reads with adapters and total basepairs
